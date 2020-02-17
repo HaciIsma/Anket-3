@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using WindowsFormsApp33.Data;
@@ -86,25 +87,27 @@ namespace WindowsFormsApp33
             }
         }
 
-        private void GetUserDB(DbDataReader reader)
+        private void Search()
         {
-            while (reader.Read())
+            user = AppDB.Users.FirstOrDefault(e => e.Name == textBox1.Text);
+        }
+
+        private void GetUser()
+        {
+            nameBox.Text = user.Name;
+            lastNameBox.Text = user.LastName;
+            middleNameBox.Text = user.MiddleName;
+            comboBoxCountry.Text = user.Country;
+            cityBox.Text = user.City;
+            phoneBox.Text = user.Phone;
+            dateTimePicker1.Value = user.Birthday;
+            if (user.Gender == "Male")
             {
-                nameBox.Text = reader.GetString(1);
-                lastNameBox.Text = reader.GetString(2);
-                middleNameBox.Text = reader.GetString(3);
-                comboBoxCountry.Text = reader.GetString(4);
-                cityBox.Text = reader.GetString(5);
-                phoneBox.Text = reader.GetString(6);
-                dateTimePicker1.Value = DateTime.Parse(reader.GetString(7));
-                if (reader.GetString(8) == "Male")
-                {
-                    male.Checked = true;
-                }
-                else if (reader.GetString(8) == "Female")
-                {
-                    female.Checked = true;
-                }
+                male.Checked = true;
+            }
+            else if (user.Gender == "Female")
+            {
+                female.Checked = true;
             }
         }
 
@@ -119,22 +122,6 @@ namespace WindowsFormsApp33
             dateTimePicker1.Value = DateTime.Now;
             male.Checked = default;
             female.Checked = default;
-        }
-
-        private void SearchUserAndGetUser(string query)
-        {
-            using (var ctx = new AppDBContext())
-            {
-                using (var command = ctx.Database.GetDbConnection().CreateCommand())
-                {
-                    command.CommandText = query;
-                    ctx.Database.OpenConnection();
-                    using (var result = command.ExecuteReader())
-                    {
-                        GetUserDB(result);
-                    }
-                }
-            }
         }
 
         #endregion
@@ -170,7 +157,8 @@ namespace WindowsFormsApp33
         {
             try
             {
-                SearchUserAndGetUser($@"SELECT * from Users WHERE name = '{textBox1.Text}'");
+                Search();
+                GetUser();
             }
             catch (Exception)
             {
